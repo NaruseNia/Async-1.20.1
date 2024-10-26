@@ -9,13 +9,11 @@ import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.world.ChunkLoadingManager;
 import net.minecraft.world.chunk.AbstractChunkHolder;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkLoader;
 import net.minecraft.world.storage.StorageKey;
 import net.minecraft.world.storage.VersionedChunkStorage;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 
 import java.nio.file.Path;
 import java.util.List;

@@ -35,7 +35,7 @@
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",
-    "minecraft": "<=1.21.1",
+    "minecraft": ">=1.21.2",
     "java": ">=21",
     "cloth-config2": ">=5.0.34"
   },
@@ -45,9 +45,15 @@
       "entity": false,
       "collections": false,
       "alloc.entity_tracker": false,
-      "world.game_events": false
+      "world.game_events": false,
+      "chunk.entity_class_groups": false
     }
   },
   "suggests": {
+  },
+  "breaks": {
+    "vmp-fabric": "*",
+    "sepals": "*",
+    "moonrise": "*"
   }
 }

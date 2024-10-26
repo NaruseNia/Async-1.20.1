@@ -41,7 +41,7 @@ public abstract class NearestLivingEntitiesSensorMixin<T extends LivingEntity> e
         if (brain != null) {
             synchronized (brain) {
                 brain.remember(MemoryModuleType.MOBS, sortedList);
-                brain.remember(MemoryModuleType.VISIBLE_MOBS, new LivingTargetCache(entity, sortedList));
+                brain.remember(MemoryModuleType.VISIBLE_MOBS, new LivingTargetCache(world, entity, sortedList));
             }
         }
         ci.cancel();
