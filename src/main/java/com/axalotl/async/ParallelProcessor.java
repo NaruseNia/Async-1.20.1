@@ -90,9 +90,9 @@ public class ParallelProcessor {
         return Async.config.disabled ||
                 Async.config.disableEntity ||
                 isModEntity(entity) ||
+                entity instanceof AbstractMinecartEntity ||
                 specialEntities.contains(entity.getClass()) ||
                 (Async.config.disableTNT && entity instanceof TntEntity) ||
-                entity instanceof AbstractMinecartEntity ||
                 (entity.portalManager != null && entity.portalManager.isInPortal());
     }
 
@@ -128,30 +128,20 @@ public class ParallelProcessor {
     }
 
     public static void postEntityTick() {
-        if (Async.config.disabled || Async.config.disableEntity || entityTickFutures.isEmpty()) {
-            return;
-        }
-        try {
-            List<CompletableFuture<Void>> activeFutures = new ArrayList<>(entityTickFutures);
-            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                    activeFutures.toArray(new CompletableFuture[0])
-            ).orTimeout(1, TimeUnit.MINUTES);
+        if (!Async.config.disabled && !Async.config.disableEntity) {
             try {
-                allFutures.join();
+                CompletableFuture<Void> allTasks = CompletableFuture
+                        .allOf(entityTickFutures.toArray(new CompletableFuture[0]))
+                        .orTimeout(5, TimeUnit.MINUTES);
+                allTasks.join();
             } catch (CompletionException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof TimeoutException) {
-                    LOGGER.error("Entity tick timeout after 1 minute");
-                    activeFutures.forEach(f -> f.cancel(true));
-                } else {
-                    LOGGER.error("Entity tick failed", cause);
-                }
+                LOGGER.error("Critical error during entity tick processing", e);
+                server.shutdown();
+            } finally {
+                entityTickFutures.clear();
             }
-        } catch (Exception e) {
-            LOGGER.error("Critical error during entity tick processing", e);
-        } finally {
-            entityTickFutures.clear();
         }
+
     }
 
     private static boolean isModEntity(Entity entityIn) {

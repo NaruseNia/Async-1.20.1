@@ -16,7 +16,7 @@
   },
   "license": "GPLv3",
   "icon": "assets/async/icon.png",
-  "environment": "*",
+  "environment": "server",
   "entrypoints": {
     "preLaunch": [
       "com.axalotl.async.parallelised.fastutil.sync.SyncFuTransformer"
@@ -33,7 +33,7 @@
     "async.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.11.3",
+    "fabricloader": ">=0.16.7",
     "fabric": "*",
     "minecraft": ">=1.21.2",
     "java": ">=21",
