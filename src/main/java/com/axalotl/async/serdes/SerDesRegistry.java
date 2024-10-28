@@ -23,19 +23,24 @@ import org.apache.logging.log4j.Logger;
 
 public class SerDesRegistry {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final Map<Class<?>, ISerDesFilter> EMPTYMAP = new ConcurrentHashMap<>();
-    private static final Set<Class<?>> EMPTYSET = ConcurrentHashMap.newKeySet();
-
-    static Map<ISerDesHookType, Map<Class<?>, ISerDesFilter>> optimisedLookup = new ConcurrentHashMap<>();
-    static Map<ISerDesHookType, Set<Class<?>>> whitelist = new ConcurrentHashMap<>();
-    static Set<Class<?>> unknown = ConcurrentHashMap.newKeySet();
-    static ArrayList<ISerDesFilter> filters = new ArrayList<>();
-    static Set<ISerDesHookType> hookTypes = new HashSet<>();
-
+    private static final Map<Class<?>, ISerDesFilter> EMPTY_FILTER_MAP = new ConcurrentHashMap<>();
+    private static final Set<Class<?>> EMPTY_CLASS_SET = ConcurrentHashMap.newKeySet();
+    
+    private static final Map<ISerDesHookType, Map<Class<?>, ISerDesFilter>> optimisedLookup = new ConcurrentHashMap<>();
+    private static final Map<ISerDesHookType, Set<Class<?>>> whitelist = new ConcurrentHashMap<>();
+    private static final Set<Class<?>> unknown = ConcurrentHashMap.newKeySet();
+    private static final Set<ISerDesHookType> hookTypes = ConcurrentHashMap.newKeySet();
+    private static final List<ISerDesFilter> filters = new ArrayList<>();
+    private static final Map<String, ISerDesPool> poolRegistry = new ConcurrentHashMap<>();
+    
     private static final ISerDesFilter DEFAULT_FILTER = new DefaultFilter();
 
     static {
         Collections.addAll(hookTypes, SerDesHookTypes.values());
+    }
+
+    private SerDesRegistry() {
+        // Приватный конструктор для предотвращения создания экземпляров
     }
 
     public static void init() {
@@ -44,158 +49,212 @@ public class SerDesRegistry {
         initLookup();
     }
 
-    public static void initFilters() {
+    private static void initFilters() {
         filters.clear();
-        filters.add(new VanillaFilter());
-        filters.add(new LegacyFilter());
-        for (SerDesConfig.FilterConfig fpc : SerDesConfig.getFilters()) {
-            filters.add(new GenericConfigFilter(fpc));
+        
+        // Высокоприоритетные фильтры
+        addFilter(new VanillaFilter());
+        addFilter(new LegacyFilter());
+        
+        // Фильтры из конфигурации
+        for (SerDesConfig.FilterConfig config : SerDesConfig.getFilters()) {
+            addFilter(new GenericConfigFilter(config));
         }
-        filters.add(AutoFilter.singleton());
-        filters.add(DEFAULT_FILTER);
-        filters.forEach(ISerDesFilter::init);
+        
+        // Низкоприоритетные фильтры
+        addFilter(AutoFilter.singleton());
+        addFilter(DEFAULT_FILTER);
+        
+        // Инициализация всех фильтров
+        for (ISerDesFilter filter : filters) {
+            filter.init();
+        }
     }
 
-    public static void initLookup() {
+    private static void addFilter(ISerDesFilter filter) {
+        if (filter != null) {
+            filters.add(filter);
+        }
+    }
+
+    private static void initLookup() {
         optimisedLookup.clear();
-        for (ISerDesFilter f : filters) {
-            Set<Class<?>> rawTgt = Optional.ofNullable(f.getTargets()).orElseGet(ConcurrentHashMap::newKeySet);
-            Set<Class<?>> rawWl = Optional.ofNullable(f.getWhitelist()).orElseGet(ConcurrentHashMap::newKeySet);
-            Map<ISerDesHookType, Set<Class<?>>> whitelisted = group(rawWl);
-            for (ISerDesHookType sh : hookTypes) {
-                for (Class<?> i : rawTgt) {
-                    if (sh.isTargetable(i)) {
-                        optimisedLookup.computeIfAbsent(sh, k -> new ConcurrentHashMap<>()).put(i, f);
-                        whitelisted.computeIfAbsent(sh, k -> ConcurrentHashMap.newKeySet()).remove(i);
+        
+        for (ISerDesFilter filter : filters) {
+            Set<Class<?>> targets = filter.getTargets();
+            Set<Class<?>> whitelistClasses = filter.getWhitelist();
+            
+            if (targets == null) targets = ConcurrentHashMap.newKeySet();
+            if (whitelistClasses == null) whitelistClasses = ConcurrentHashMap.newKeySet();
+            
+            Map<ISerDesHookType, Set<Class<?>>> groupedWhitelist = groupClassesByHookType(whitelistClasses);
+            
+            for (ISerDesHookType hookType : hookTypes) {
+                for (Class<?> targetClass : targets) {
+                    if (hookType.isTargetable(targetClass)) {
+                        optimisedLookup.computeIfAbsent(hookType, k -> new ConcurrentHashMap<>())
+                            .put(targetClass, filter);
+                        groupedWhitelist.getOrDefault(hookType, EMPTY_CLASS_SET).remove(targetClass);
                     }
                 }
-                whitelisted.computeIfAbsent(sh, k -> ConcurrentHashMap.newKeySet()).addAll(rawWl);
+                
+                whitelist.computeIfAbsent(hookType, k -> ConcurrentHashMap.newKeySet())
+                    .addAll(groupedWhitelist.getOrDefault(hookType, EMPTY_CLASS_SET));
             }
         }
     }
 
-    public static Map<ISerDesHookType, Set<Class<?>>> group(Set<Class<?>> set) {
-        Map<ISerDesHookType, Set<Class<?>>> out = new ConcurrentHashMap<>();
-        for (Class<?> i : set) {
-            for (ISerDesHookType sh : hookTypes) {
-                if (sh.isTargetable(i)) {
-                    out.computeIfAbsent(sh, k -> ConcurrentHashMap.newKeySet()).add(i);
+    private static Map<ISerDesHookType, Set<Class<?>>> groupClassesByHookType(Set<Class<?>> classes) {
+        Map<ISerDesHookType, Set<Class<?>>> grouped = new ConcurrentHashMap<>();
+        
+        for (Class<?> clazz : classes) {
+            for (ISerDesHookType hookType : hookTypes) {
+                if (hookType.isTargetable(clazz)) {
+                    grouped.computeIfAbsent(hookType, k -> ConcurrentHashMap.newKeySet())
+                        .add(clazz);
                 }
             }
         }
-        return out;
+        
+        return grouped;
     }
 
-    public static ISerDesFilter getFilter(ISerDesHookType isdh, Class<?> clazz) {
-        if (whitelist.getOrDefault(isdh, EMPTYSET).contains(clazz)) {
+    public static ISerDesFilter getFilter(ISerDesHookType hookType, Class<?> clazz) {
+        if (whitelist.getOrDefault(hookType, EMPTY_CLASS_SET).contains(clazz)) {
             return null;
         }
-        return optimisedLookup.getOrDefault(isdh, EMPTYMAP).getOrDefault(clazz, DEFAULT_FILTER);
+        return optimisedLookup.getOrDefault(hookType, EMPTY_FILTER_MAP)
+            .getOrDefault(clazz, DEFAULT_FILTER);
     }
-
-    static Map<String, ISerDesPool> registry = new ConcurrentHashMap<>();
 
     public static ISerDesPool getPool(String name) {
-        return registry.get(name);
+        return poolRegistry.get(name);
     }
 
-    public static ISerDesPool getOrCreatePool(String name, Function<String, ISerDesPool> source) {
-        return registry.computeIfAbsent(name, source);
+    public static ISerDesPool getOrCreatePool(String name, Function<String, ISerDesPool> factory) {
+        return poolRegistry.computeIfAbsent(name, factory);
     }
 
-    public static ISerDesPool getOrCreatePool(String name, Supplier<ISerDesPool> source) {
-        return getOrCreatePool(name, i -> {
-            ISerDesPool out = source.get();
-            out.init(i, new HashMap<>());
-            return out;
+    public static ISerDesPool getOrCreatePool(String name, Supplier<ISerDesPool> supplier) {
+        return getOrCreatePool(name, poolName -> {
+            ISerDesPool pool = supplier.get();
+            pool.init(poolName, new HashMap<>());
+            return pool;
         });
     }
 
-    public static void initPools() {
-        registry.clear();
+    private static void initPools() {
+        poolRegistry.clear();
+        
+        // Стандартные пулы
         getOrCreatePool("LEGACY", ChunkLockPool::new);
         getOrCreatePool("SINGLE", SingleExecutionPool::new);
         getOrCreatePool("POST", () -> PostExecutePool.POOL);
-        List<SerDesConfig.PoolConfig> pcl = SerDesConfig.getPools();
-        if (pcl != null) {
-            for (SerDesConfig.PoolConfig pc : pcl) {
-                if (!registry.containsKey(pc.getName())) {
-                    try {
-                        Class<?> c = Class.forName(pc.getClazz());
-                        Constructor<?> init = c.getConstructor();
-                        Object o = init.newInstance();
-                        if (o instanceof ISerDesPool) {
-                            registry.put(pc.getName(), (ISerDesPool) o);
-                            ((ISerDesPool) o).init(pc.getName(), pc.getInitParams());
-                        }
-                    } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException |
-                             IllegalAccessException | InvocationTargetException e) {
-                        LOGGER.error("Error initializing pool: {}", pc.getName(), e);
-                    }
+        
+        // Пулы из конфигурации
+        List<SerDesConfig.PoolConfig> poolConfigs = SerDesConfig.getPools();
+        if (poolConfigs != null) {
+            for (SerDesConfig.PoolConfig config : poolConfigs) {
+                createPoolFromConfig(config);
+            }
+        }
+    }
+
+    private static void createPoolFromConfig(SerDesConfig.PoolConfig config) {
+        if (!poolRegistry.containsKey(config.getName())) {
+            try {
+                Class<?> poolClass = Class.forName(config.getClazz());
+                Constructor<?> constructor = poolClass.getConstructor();
+                Object poolInstance = constructor.newInstance();
+
+                if (poolInstance instanceof ISerDesPool pool) {
+                    pool.init(config.getName(), config.getInitParams());
+                    poolRegistry.put(config.getName(), pool);
                 }
+            } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
+                     InstantiationException | IllegalAccessException | IllegalArgumentException |
+                     InvocationTargetException e) {
+                LOGGER.error("Failed to create pool from config: " + config.getName(), e);
             }
         }
     }
 
     public static class DefaultFilter implements ISerDesFilter {
-        ISerDesPool clp;
-        ISerDesPool.ISerDesOptions config;
+        private ISerDesPool chunkLockPool;
+        private ISerDesPool.ISerDesOptions config;
 
         @Override
         public void init() {
-            clp = SerDesRegistry.getOrCreatePool("LEGACY", ChunkLockPool::new);
+            chunkLockPool = getOrCreatePool("LEGACY", ChunkLockPool::new);
             Map<String, Object> cfg = new HashMap<>();
             cfg.put("range", "1");
-            config = clp.compileOptions(cfg);
+            config = chunkLockPool.compileOptions(cfg);
         }
 
         @Override
-        public void serialise(Runnable task, Object obj, BlockPos bp, World w, ISerDesHookType hookType) {
+        public void serialise(Runnable task, Object obj, BlockPos pos, World world, ISerDesHookType hookType) {
             if (!unknown.contains(obj.getClass())) {
                 ClassMode mode = ClassMode.UNKNOWN;
-                for (ISerDesFilter isdf : filters) {
-                    ClassMode cm = isdf.getModeOnline(obj.getClass());
-                    if (cm.compareTo(mode) < 0) {
-                        mode = cm;
+                
+                for (ISerDesFilter filter : filters) {
+                    ClassMode currentMode = filter.getModeOnline(obj.getClass());
+                    if (currentMode.compareTo(mode) < 0) {
+                        mode = currentMode;
                     }
                     if (mode == ClassMode.BLACKLIST) {
-                        optimisedLookup.computeIfAbsent(hookType, i -> new ConcurrentHashMap<>()).put(obj.getClass(), isdf);
-                        isdf.serialise(task, obj, bp, w, hookType);
+                        optimisedLookup.computeIfAbsent(hookType, i -> new ConcurrentHashMap<>())
+                            .put(obj.getClass(), this);
+                        filter.serialise(task, obj, pos, world, hookType);
                         return;
                     }
                 }
+                
                 if (mode == ClassMode.WHITELIST) {
-                    whitelist.computeIfAbsent(hookType, k -> ConcurrentHashMap.newKeySet()).add(obj.getClass());
+                    whitelist.computeIfAbsent(hookType, k -> ConcurrentHashMap.newKeySet())
+                        .add(obj.getClass());
                     task.run();
                     return;
                 }
+                
                 unknown.add(obj.getClass());
             }
-            if (hookType.equals(SerDesHookTypes.TETick) && filterTE(obj)) {
-                if (clp == null) {
-                    clp = SerDesRegistry.getOrCreatePool("LEGACY", ChunkLockPool::new);
+            
+            if (hookType.equals(SerDesHookTypes.TETick) && shouldFilterBlockEntity(obj)) {
+                if (chunkLockPool == null) {
+                    chunkLockPool = getOrCreatePool("LEGACY", ChunkLockPool::new);
                 }
-                clp.serialise(task, obj, bp, w, config);
+                chunkLockPool.serialise(task, obj, pos, world, config);
             } else {
-                try {
-                    task.run();
-                } catch (Exception e) {
-                    LOGGER.error("Exception running {} asynchronously", obj.getClass().getName(), e);
-                    AutoFilter.singleton().addClassToBlacklist(obj.getClass());
-                    if (e instanceof RuntimeException) throw e;
-                }
+                executeTaskSafely(task, obj);
             }
         }
 
-        public static boolean filterTE(Object tte) {
-            boolean isLocking = BlockEntityLists.teBlackList.contains(tte.getClass());
-            if (!isLocking && !tte.getClass().getName().startsWith("net.minecraft.block.entity.")) {
-                isLocking = true;
+        private boolean shouldFilterBlockEntity(Object blockEntity) {
+            if (blockEntity instanceof PistonBlockEntity) {
+                return true;
             }
-            if (isLocking && BlockEntityLists.teWhiteList.contains(tte.getClass())) {
-                isLocking = false;
+
+            boolean isBlacklisted = BlockEntityLists.teBlackList.contains(blockEntity.getClass());
+            if (!isBlacklisted && !blockEntity.getClass().getName().startsWith("net.minecraft.block.entity.")) {
+                isBlacklisted = true;
             }
-            return isLocking || tte instanceof PistonBlockEntity;
+
+            return isBlacklisted && !BlockEntityLists.teWhiteList.contains(blockEntity.getClass());
+        }
+
+        private void executeTaskSafely(Runnable task, Object obj) {
+            try {
+                task.run();
+            } catch (Exception e) {
+                LOGGER.error("Exception running {} asynchronously", obj.getClass().getName(), e);
+                LOGGER.error("Adding {} to blacklist", obj.getClass().getName());
+                
+                AutoFilter.singleton().addClassToBlacklist(obj.getClass());
+                
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+            }
         }
     }
 }

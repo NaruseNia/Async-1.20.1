@@ -35,13 +35,7 @@ public class ParallelProcessor {
     private static final Set<Class<?>> specialEntities = Set.of(
             PlayerEntity.class,
             ServerPlayerEntity.class,
-            FallingBlockEntity.class,
-            MinecartEntity.class,
-            HopperMinecartEntity.class,
-            ChestMinecartEntity.class,
-            CommandBlockMinecartEntity.class,
-            FurnaceMinecartEntity.class,
-            SpawnerMinecartEntity.class
+            FallingBlockEntity.class
     );
 
     static Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
@@ -55,19 +49,17 @@ public class ParallelProcessor {
                     .factory();
             tickPool = Executors.newThreadPerTaskExecutor(factory);
         } else {
-            final ClassLoader cl = Async.class.getClassLoader();
             ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
                 ForkJoinWorkerThread fjwt = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
                 fjwt.setName("Async-Tick-Pool-Thread-" + ThreadPoolID.getAndIncrement());
                 regThread("Async-Tick", fjwt);
                 fjwt.setDaemon(true);
-                fjwt.setContextClassLoader(cl);
+                fjwt.setContextClassLoader(Async.class.getClassLoader());
                 return fjwt;
             };
             tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Error on create Async tickPool", e), true);
         }
     }
-
 
     public static void regThread(String poolName, Thread thread) {
         mcThreadTracker.computeIfAbsent(poolName, s -> ConcurrentHashMap.newKeySet()).add(thread);
@@ -85,40 +77,80 @@ public class ParallelProcessor {
         entityTickFutures.removeIf(CompletableFuture::isDone);
     }
 
-
     public static void callEntityTick(Consumer<Entity> tickConsumer, Entity entityIn, ServerWorld serverworld) {
-        if (Async.config.disabled || Async.config.disableEntity || isModEntity(entityIn) ||
-                specialEntities.contains(entityIn.getClass()) ||
-                (Async.config.disableTNT && entityIn instanceof TntEntity) ||
-                (entityIn.portalManager != null && entityIn.portalManager.isInPortal())
-        ) {
-            tickConsumer.accept(entityIn);
+        if (shouldTickSynchronously(entityIn)) {
+            tickSynchronously(tickConsumer, entityIn);
             return;
         }
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            try {
-                final ISerDesFilter filter = SerDesRegistry.getFilter(SerDesHookTypes.EntityTick, entityIn.getClass());
-                currentEnts.incrementAndGet();
-                if (filter != null) {
-                    filter.serialise(() -> tickConsumer.accept(entityIn), entityIn, entityIn.getBlockPos(), serverworld, SerDesHookTypes.EntityTick);
-                } else {
-                    tickConsumer.accept(entityIn);
-                }
-            } catch (Exception e) {
-                LOGGER.error("Exception ticking Entity {} at {}", entityIn.getType().getName(), entityIn.getPos(), e);
-            } finally {
-                currentEnts.decrementAndGet();
-            }
-        }, tickPool);
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> performAsyncEntityTick(tickConsumer, entityIn, serverworld), tickPool);
         entityTickFutures.add(future);
     }
 
+    private static boolean shouldTickSynchronously(Entity entity) {
+        return Async.config.disabled ||
+                Async.config.disableEntity ||
+                isModEntity(entity) ||
+                specialEntities.contains(entity.getClass()) ||
+                (Async.config.disableTNT && entity instanceof TntEntity) ||
+                entity instanceof AbstractMinecartEntity ||
+                (entity.portalManager != null && entity.portalManager.isInPortal());
+    }
+
+    private static void tickSynchronously(Consumer<Entity> tickConsumer, Entity entity) {
+        try {
+            tickConsumer.accept(entity);
+        } catch (Exception e) {
+            LOGGER.error("Error ticking entity {} synchronously",
+                    entity.getType().getName(),
+                    e);
+        }
+    }
+
+    private static void performAsyncEntityTick(Consumer<Entity> tickConsumer, Entity entity, ServerWorld serverworld) {
+        try {
+            currentEnts.incrementAndGet();
+            final ISerDesFilter filter = SerDesRegistry.getFilter(SerDesHookTypes.EntityTick, entity.getClass());
+
+            if (filter != null) {
+                filter.serialise(
+                        () -> tickConsumer.accept(entity),
+                        entity,
+                        entity.getBlockPos(),
+                        serverworld,
+                        SerDesHookTypes.EntityTick
+                );
+            } else {
+                tickConsumer.accept(entity);
+            }
+        } finally {
+            currentEnts.decrementAndGet();
+        }
+    }
+
     public static void postEntityTick() {
-        if (!Async.config.disabled && !Async.config.disableEntity) {
-            CompletableFuture<Void> allTasks = CompletableFuture
-                    .allOf(entityTickFutures.toArray(new CompletableFuture[0]))
-                    .orTimeout(1, TimeUnit.MINUTES);
-            allTasks.join();
+        if (Async.config.disabled || Async.config.disableEntity || entityTickFutures.isEmpty()) {
+            return;
+        }
+        try {
+            List<CompletableFuture<Void>> activeFutures = new ArrayList<>(entityTickFutures);
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+                    activeFutures.toArray(new CompletableFuture[0])
+            ).orTimeout(1, TimeUnit.MINUTES);
+            try {
+                allFutures.join();
+            } catch (CompletionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof TimeoutException) {
+                    LOGGER.error("Entity tick timeout after 1 minute");
+                    activeFutures.forEach(f -> f.cancel(true));
+                } else {
+                    LOGGER.error("Entity tick failed", cause);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("Critical error during entity tick processing", e);
+        } finally {
+            entityTickFutures.clear();
         }
     }
 

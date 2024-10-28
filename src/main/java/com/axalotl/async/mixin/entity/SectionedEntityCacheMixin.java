@@ -23,5 +23,4 @@ public abstract class SectionedEntityCacheMixin<T extends EntityLike> {
     @Final
     @Mutable
     private LongSortedSet trackedPositions = new ConcurrentLongSortedSet();
-
 }

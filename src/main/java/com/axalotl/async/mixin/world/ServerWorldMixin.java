@@ -4,13 +4,10 @@ import com.axalotl.async.Async;
 import com.axalotl.async.ParallelProcessor;
 import com.axalotl.async.parallelised.ConcurrentCollections;
 import com.axalotl.async.parallelised.ParaServerChunkProvider;
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.DataFixer;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.BlockEvent;
@@ -18,10 +15,8 @@ import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerEntityManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureTemplateManager;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.ChunkStatusChangeListener;
-import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.objectweb.asm.Opcodes;
@@ -56,24 +51,24 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/world/level/storage/LevelStorage$Session;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/structure/StructureTemplateManager;Ljava/util/concurrent/Executor;Lnet/minecraft/world/gen/chunk/ChunkGenerator;IIZLnet/minecraft/server/WorldGenerationProgressListener;Lnet/minecraft/world/chunk/ChunkStatusChangeListener;Ljava/util/function/Supplier;)Lnet/minecraft/server/world/ServerChunkManager;"))
     private ServerChunkManager overwriteServerChunkManager(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor workerExecutor, ChunkGenerator chunkGenerator, int viewDistance, int simulationDistance, boolean dsync, WorldGenerationProgressListener worldGenerationProgressListener, ChunkStatusChangeListener chunkStatusChangeListener, Supplier persistentStateManagerFactory) {
-        if (Async.c2me) {
-            return new ServerChunkManager(
-                    this.toServerWorld(),
-                    session,
-                    dataFixer,
-                    server.getStructureTemplateManager(),
-                    workerExecutor,
-                    chunkGenerator,
-                    server.getPlayerManager().getViewDistance(),
-                    server.getPlayerManager().getSimulationDistance(),
-                    server.syncChunkWrites(),
-                    worldGenerationProgressListener,
-                    this.entityManager::updateTrackingStatus,
-                    () -> server.getOverworld().getPersistentStateManager()
-            );
-        } else {
-            return new ParaServerChunkProvider(world, session, dataFixer, structureTemplateManager, workerExecutor, chunkGenerator, viewDistance, simulationDistance, dsync, worldGenerationProgressListener, chunkStatusChangeListener, persistentStateManagerFactory);
-        }
+//        if (Async.c2me) {
+//            return new ServerChunkManager(
+//                    this.toServerWorld(),
+//                    session,
+//                    dataFixer,
+//                    server.getStructureTemplateManager(),
+//                    workerExecutor,
+//                    chunkGenerator,
+//                    server.getPlayerManager().getViewDistance(),
+//                    server.getPlayerManager().getSimulationDistance(),
+//                    server.syncChunkWrites(),
+//                    worldGenerationProgressListener,
+//                    this.entityManager::updateTrackingStatus,
+//                    () -> server.getOverworld().getPersistentStateManager()
+//            );
+//        } else {
+        return new ParaServerChunkProvider(world, session, dataFixer, structureTemplateManager, workerExecutor, chunkGenerator, viewDistance, simulationDistance, dsync, worldGenerationProgressListener, chunkStatusChangeListener, persistentStateManagerFactory);
+//        }
     }
 
     @Redirect(method = "method_31420", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickEntity(Ljava/util/function/Consumer;Lnet/minecraft/entity/Entity;)V"))
@@ -111,8 +106,5 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
 
     }
 
-    @WrapMethod(method = "emitGameEvent")
-    private synchronized void postBlockEntityTick(RegistryEntry<GameEvent> event, Vec3d emitterPos, GameEvent.Emitter emitter, Operation<Void> original) {
-        original.call(event, emitterPos, emitter);
-    }
+
 }
