@@ -35,7 +35,7 @@ public class GeneralConfig implements ConfigData {
     public boolean disableEntity = false;
 
     @Comment("Disable tnt entity parallelisation")
-    public boolean disableTNT = false;
+    public boolean disableTNT = true;
 
     public enum ParaMaxMode {
         Standard,
