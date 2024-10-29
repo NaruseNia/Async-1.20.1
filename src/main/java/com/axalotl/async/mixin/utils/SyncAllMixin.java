@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(value = {
     PathMinHeap.class, 
-//    ChunkTickScheduler.class,
+    ChunkTickScheduler.class,
     LevelPropagator.class, 
     EntityNavigation.class, 
     CheckedRandom.class, 
