@@ -23,7 +23,7 @@
     "entity.SectionedEntityCacheMixin",
     "entity.ServerEntityManagerListenerMixin",
     "entity.ServerPlayerEntityMixin",
-    "entity.VillagerGossipsMixin",
+      "entity.VillagerGossipsMixin",
     "server.DedicatedServerWatchdogMixin",
     "server.MinecraftServerMixin",
     "utils.LockHelperMixin",

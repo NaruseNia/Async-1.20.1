@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.Mixin;
 
 
 @Mixin(value = {
-    PathMinHeap.class, 
-    ChunkTickScheduler.class,
-    LevelPropagator.class, 
-    EntityNavigation.class, 
-    CheckedRandom.class, 
-    SimpleGameEventDispatcher.class, 
-    AbstractCriterion.class, 
-    WardenAngerManager.class,
-    WorldBorder.class
+        PathMinHeap.class,
+        ChunkTickScheduler.class,
+        LevelPropagator.class,
+        EntityNavigation.class,
+        CheckedRandom.class,
+        SimpleGameEventDispatcher.class,
+        AbstractCriterion.class,
+        WardenAngerManager.class,
+        WorldBorder.class
 })
 public class SyncAllMixin {
 }
