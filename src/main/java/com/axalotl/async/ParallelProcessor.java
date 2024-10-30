@@ -29,7 +29,7 @@ public class ParallelProcessor {
     @Getter
     @Setter
     protected static MinecraftServer server;
-    protected static ExecutorService tickPool;
+    public static ExecutorService tickPool;
     private static final Queue<CompletableFuture<Void>> entityTickFutures = new ConcurrentLinkedQueue<>();
     protected static AtomicInteger ThreadPoolID = new AtomicInteger();
     @Getter
@@ -81,17 +81,26 @@ public class ParallelProcessor {
             tickSynchronously(tickConsumer, entityIn);
             return;
         }
-        ChunkPos entityChunkPos = entityIn.getChunkPos();
-        if (isChunkSafe(serverworld, entityChunkPos)) {
+        if (isChunkSafe(serverworld, entityIn.getChunkPos())) {
             tickSynchronously(tickConsumer, entityIn);
             return;
         }
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(
-            () -> performAsyncEntityTick(tickConsumer, entityIn, serverworld),
-            tickPool
+                () -> performAsyncEntityTick(tickConsumer, entityIn, serverworld),
+                tickPool
         );
         entityTickFutures.add(future);
+    }
+
+    private static boolean isChunkSafe(ServerWorld world, ChunkPos pos) {
+        try {
+            Chunk chunk = world.getChunk(pos.x, pos.z, ChunkStatus.FULL, false);
+            return chunk == null || chunk.getStatus() != ChunkStatus.FULL;
+        } catch (Exception e) {
+            LOGGER.error("Error checking chunk safety at {}", pos, e);
+            return true;
+        }
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
@@ -114,25 +123,9 @@ public class ParallelProcessor {
         }
     }
 
-    private static boolean isChunkSafe(ServerWorld world, ChunkPos pos) {
-        try {
-            Chunk chunk = world.getChunk(pos.x, pos.z, ChunkStatus.FULL, false);
-            return chunk == null || !chunk.getStatus().isAtLeast(ChunkStatus.FULL);
-        } catch (Exception e) {
-            LOGGER.error("Error checking chunk safety at {}", pos, e);
-            return true;
-        }
-    }
-
     private static void performAsyncEntityTick(Consumer<Entity> tickConsumer, Entity entity, ServerWorld serverworld) {
         try {
             currentEnts.incrementAndGet();
-            
-            ChunkPos entityChunkPos = entity.getChunkPos();
-            if (isChunkSafe(serverworld, entityChunkPos)) {
-                tickSynchronously(tickConsumer, entity);
-                return;
-            }
 
             final ISerDesFilter filter = SerDesRegistry.getFilter(SerDesHookTypes.EntityTick, entity.getClass());
 
