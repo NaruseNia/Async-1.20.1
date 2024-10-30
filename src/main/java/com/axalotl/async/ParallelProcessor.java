@@ -13,9 +13,6 @@ import net.minecraft.entity.vehicle.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -81,26 +78,11 @@ public class ParallelProcessor {
             tickSynchronously(tickConsumer, entityIn);
             return;
         }
-        if (isChunkSafe(serverworld, entityIn.getChunkPos())) {
-            tickSynchronously(tickConsumer, entityIn);
-            return;
-        }
-
         CompletableFuture<Void> future = CompletableFuture.runAsync(
                 () -> performAsyncEntityTick(tickConsumer, entityIn, serverworld),
                 tickPool
         );
         entityTickFutures.add(future);
-    }
-
-    private static boolean isChunkSafe(ServerWorld world, ChunkPos pos) {
-        try {
-            Chunk chunk = world.getChunk(pos.x, pos.z, ChunkStatus.FULL, false);
-            return chunk == null || chunk.getStatus() != ChunkStatus.FULL;
-        } catch (Exception e) {
-            LOGGER.error("Error checking chunk safety at {}", pos, e);
-            return true;
-        }
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
