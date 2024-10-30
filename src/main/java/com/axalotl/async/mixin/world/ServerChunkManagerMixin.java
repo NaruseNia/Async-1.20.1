@@ -1,6 +1,8 @@
 package com.axalotl.async.mixin.world;
 
 import com.axalotl.async.parallelised.ConcurrentCollections;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkLoadingManager;
@@ -31,16 +33,26 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Final
     public Set<ChunkHolder> chunksToBroadcastUpdate = ConcurrentCollections.newHashSet();
 
-    @Shadow @Final
+    @Shadow
+    @Final
     Thread serverThread;
 
-    @Shadow @Nullable public abstract ChunkHolder getChunkHolder(long pos);
+    @Shadow
+    @Nullable
+    public abstract ChunkHolder getChunkHolder(long pos);
 
-    @Shadow @Final public ServerChunkLoadingManager chunkLoadingManager;
+    @Shadow
+    @Final
+    public ServerChunkLoadingManager chunkLoadingManager;
 
     @Redirect(method = {"getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", "getWorldChunk"}, at = @At(value = "FIELD", target = "Lnet/minecraft/server/world/ServerChunkManager;serverThread:Ljava/lang/Thread;", opcode = Opcodes.GETFIELD))
     private Thread overwriteServerThread(ServerChunkManager mgr) {
         return Thread.currentThread();
+    }
+
+    @WrapMethod(method = "putInCache")
+    private synchronized void syncPutInCache(long pos, Chunk chunk, ChunkStatus status, Operation<Void> original) {
+        original.call(pos, chunk, status);
     }
 
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
