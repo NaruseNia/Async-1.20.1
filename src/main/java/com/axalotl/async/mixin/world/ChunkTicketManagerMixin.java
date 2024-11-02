@@ -15,7 +15,6 @@ public abstract class ChunkTicketManagerMixin {
     @Final
     @Mutable
     Set<ChunkHolder> chunkHoldersWithPendingUpdates = ConcurrentCollections.newHashSet();
-
     @Shadow
     @Final
     @Mutable

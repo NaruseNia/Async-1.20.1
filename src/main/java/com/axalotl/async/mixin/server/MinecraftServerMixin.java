@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.BooleanSupplier;
 
-@Mixin(value = MinecraftServer.class, priority = Integer.MAX_VALUE)
+@Mixin(value = MinecraftServer.class)
 public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<ServerTask> implements CommandOutput, AutoCloseable {
 
     @Shadow @Final private Thread serverThread;

@@ -9,6 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.vehicle.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -88,12 +89,20 @@ public class ParallelProcessor {
     private static boolean shouldTickSynchronously(Entity entity) {
         return Async.config.disabled ||
                 Async.config.disableEntity ||
-                isModEntity(entity) ||
+                tickPortalSynchronously(entity) ||
                 entity instanceof AbstractMinecartEntity ||
                 specialEntities.contains(entity.getClass()) ||
                 (Async.config.disableTNT && entity instanceof TntEntity) ||
-                (entity.portalManager != null && entity.portalManager.isInPortal());
+                isModEntity(entity);
     }
+
+    private static boolean tickPortalSynchronously(Entity entity) {
+        if (entity.portalManager != null && entity.portalManager.isInPortal()) {
+            return true;
+        }
+        return entity instanceof ProjectileEntity;
+    }
+
 
     private static void tickSynchronously(Consumer<Entity> tickConsumer, Entity entity) {
         try {
