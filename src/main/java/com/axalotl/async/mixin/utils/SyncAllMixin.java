@@ -7,7 +7,6 @@ import net.minecraft.entity.ai.pathing.PathMinHeap;
 import net.minecraft.util.math.random.CheckedRandom;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.light.LevelPropagator;
-import net.minecraft.world.dimension.PortalManager;
 import net.minecraft.world.event.listener.SimpleGameEventDispatcher;
 import net.minecraft.world.tick.ChunkTickScheduler;
 import org.spongepowered.asm.mixin.Mixin;

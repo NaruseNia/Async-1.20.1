@@ -64,6 +64,4 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
     private void skipSendBlockUpdatedCheck(ServerWorld instance, boolean value) {
 
     }
-
-
 }
