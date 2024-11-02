@@ -3,7 +3,6 @@ package com.axalotl.async;
 import com.axalotl.async.commands.AsyncCommand;
 import com.axalotl.async.commands.StatsCommand;
 import com.axalotl.async.config.GeneralConfig;
-import com.axalotl.async.serdes.SerDesRegistry;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
@@ -29,7 +28,6 @@ public class Async implements ModInitializer {
         holder.load();
         config = holder.getConfig();
         StatsCommand.runDataThread();
-        SerDesRegistry.init();
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             LOGGER.info("Async Setting up thread-pool...");
             ParallelProcessor.setupThreadPool(GeneralConfig.getParallelism());
