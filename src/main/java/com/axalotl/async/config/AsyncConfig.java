@@ -24,7 +24,7 @@ public class AsyncConfig {
     public static boolean disableTNT;
 
     public static void init() {
-        LOGGER.info("Initializing AsyncConfig...");
+        LOGGER.info("Initializing Async Config...");
         CONFIG = configSupplier.get();
         try {
             CONFIG.load();
