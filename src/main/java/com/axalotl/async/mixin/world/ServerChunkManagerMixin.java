@@ -31,7 +31,7 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
 
     @Shadow
     @Final
-    public Set<ChunkHolder> chunksToBroadcastUpdate = ConcurrentCollections.newHashSet();
+    private Set<ChunkHolder> chunksToBroadcastUpdate = ConcurrentCollections.newHashSet();
 
     @Shadow
     @Final
@@ -65,7 +65,6 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
                 if (chunk instanceof WrapperProtoChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
                 if (chunk != null) {
                     cir.setReturnValue(chunk);
-                    return;
                 }
             }
         }

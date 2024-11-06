@@ -33,11 +33,10 @@
     "async.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.7",
+    "fabricloader": "*",
     "fabric": "*",
     "minecraft": ">=1.21.2",
-    "java": ">=21",
-    "cloth-config2": ">=5.0.34"
+    "java": ">=21"
   },
   "custom": {
     "lithium:options": {
