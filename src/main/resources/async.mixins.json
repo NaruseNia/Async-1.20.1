@@ -7,7 +7,6 @@
     "c2me.CheckedThreadLocalRandomMixin",
     "entity.AllayEntityMixin",
     "entity.DamageTrackerMixin",
-    "entity.DefaultMinecartControllerMixin",
     "entity.DolphinEntityMixin",
     "entity.EntityIndexMixin",
     "entity.EntityListMixin",
