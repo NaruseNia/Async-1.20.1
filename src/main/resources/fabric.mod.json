@@ -40,18 +40,15 @@
   },
   "custom": {
     "lithium:options": {
+      "entity.inactive_navigations": false,
+      "chunk.entity_class_groups": false,
       "world.chunk_access": false,
-      "entity": false,
-      "collections": false,
-      "alloc.entity_tracker": false,
-      "world.game_events": false,
-      "chunk.entity_class_groups": false
+      "alloc.chunk_random": false
     }
   },
   "suggests": {
   },
   "breaks": {
-    "vmp": "*",
     "sepals": "*",
     "moonrise": "*"
   }

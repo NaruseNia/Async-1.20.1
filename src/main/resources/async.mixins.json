@@ -27,7 +27,6 @@
     "entity.SectionedEntityCacheMixin",
     "entity.ServerEntityManagerListenerMixin",
     "entity.ServerPlayerEntityMixin",
-    "entity.SpawnHelperMixin",
     "entity.VillagerGossipsMixin",
     "server.DedicatedServerWatchdogMixin",
     "server.MinecraftServerMixin",
