@@ -21,11 +21,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Mixin(value = ServerChunkLoadingManager.class, priority = 1500)
 public abstract class ServerChunkLoadingManagerMixin extends VersionedChunkStorage implements ChunkHolder.PlayersWatchingChunkProvider, ChunkLoadingManager {
-
-    public ServerChunkLoadingManagerMixin(StorageKey storageKey, Path directory, DataFixer dataFixer, boolean dsync) {
-        super(storageKey, directory, dataFixer, dsync);
-    }
-
     @Shadow
     @Final
     @Mutable
@@ -35,6 +30,10 @@ public abstract class ServerChunkLoadingManagerMixin extends VersionedChunkStora
     @Final
     @Mutable
     private List<ChunkLoader> loaders = new CopyOnWriteArrayList<>();
+
+    public ServerChunkLoadingManagerMixin(StorageKey storageKey, Path directory, DataFixer dataFixer, boolean dsync) {
+        super(storageKey, directory, dataFixer, dsync);
+    }
 
     @WrapMethod(method = "release")
     private synchronized void release(AbstractChunkHolder chunkHolder, Operation<Void> original) {

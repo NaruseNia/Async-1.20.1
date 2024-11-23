@@ -71,7 +71,7 @@ public class StatsCommand {
                             liveValues = Math.min(liveValues + 1, samples);
                             maxThreads[currentPos] = 0;
                         }
-                        int entities = ParallelProcessor.currentEnts.get();
+                        int entities = ParallelProcessor.currentEntities.get();
                         maxThreads[currentPos] = Math.max(maxThreads[currentPos], entities);
 
                         if (++entityCurrentSteps % stepsPer == 0) {

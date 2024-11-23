@@ -1,13 +1,14 @@
 package com.axalotl.async.mixin.entity;
 
 import net.minecraft.util.TypeFilter;
-import net.minecraft.util.annotation.Debug;
 import net.minecraft.util.function.LazyIterationConsumer;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.entity.EntityLike;
 import net.minecraft.world.entity.EntityTrackingSection;
-import net.minecraft.world.entity.EntityTrackingStatus;
 import org.spongepowered.asm.mixin.*;
+
+import net.minecraft.util.annotation.Debug;
+import net.minecraft.world.entity.EntityTrackingStatus;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;

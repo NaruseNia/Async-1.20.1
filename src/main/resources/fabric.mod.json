@@ -16,7 +16,7 @@
   },
   "license": "GPLv3",
   "icon": "assets/async/icon.png",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "preLaunch": [
       "com.axalotl.async.parallelised.fastutil.sync.SyncFuTransformer"
@@ -40,10 +40,10 @@
   },
   "custom": {
     "lithium:options": {
+      "util.entity_movement_tracking": false,
       "entity.inactive_navigations": false,
       "chunk.entity_class_groups": false,
-      "world.chunk_access": false,
-      "alloc.chunk_random": false
+      "world.chunk_access": false
     }
   },
   "suggests": {
