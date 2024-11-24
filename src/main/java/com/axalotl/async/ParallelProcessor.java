@@ -127,7 +127,6 @@ public class ParallelProcessor {
     public static void postEntityTick() {
         if (!AsyncConfig.disabled) {
             try {
-
                 List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskQueue);
                 CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
                 allTasks.join();
