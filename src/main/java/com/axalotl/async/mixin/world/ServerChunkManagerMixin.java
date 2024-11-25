@@ -55,4 +55,18 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
             }
         }
     }
+
+    @Inject(method = "getWorldChunk", at = @At("HEAD"), cancellable = true)
+    private void shortcutGetWorldChunk(int chunkX, int chunkZ, CallbackInfoReturnable<WorldChunk> cir) {
+        if (Thread.currentThread() != this.serverThread) {
+            final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(chunkX, chunkZ));
+            if (holder != null) {
+                final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(ChunkStatus.FULL, this.chunkLoadingManager);
+                Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
+                if (chunk instanceof WorldChunk) {
+                    cir.setReturnValue((WorldChunk) chunk);
+                }
+            }
+        }
+    }
 }

@@ -1,14 +1,9 @@
 package com.axalotl.async.mixin.utils;
 
 import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.block.AbstractRailBlock;
 import net.minecraft.entity.ai.WardenAngerManager;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.PathMinHeap;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.DefaultMinecartController;
-import net.minecraft.entity.vehicle.ExperimentalMinecartController;
-import net.minecraft.entity.vehicle.MinecartController;
 import net.minecraft.util.math.random.CheckedRandom;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.light.LevelPropagator;
@@ -26,9 +21,7 @@ import org.spongepowered.asm.mixin.Mixin;
         SimpleGameEventDispatcher.class,
         AbstractCriterion.class,
         WardenAngerManager.class,
-        WorldBorder.class,
-        DefaultMinecartController.class,
-        ExperimentalMinecartController.class,
+        WorldBorder.class
 })
 public class SyncAllMixin {
 }
