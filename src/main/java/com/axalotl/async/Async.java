@@ -34,7 +34,7 @@ public class Async implements ModInitializer {
             dispatcher.register(ConfigCommand.registerConfig(CommandManager.literal("async")));
         });
 
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             LOGGER.info("Shutting down Async thread pool...");
             ParallelProcessor.stop();
         });

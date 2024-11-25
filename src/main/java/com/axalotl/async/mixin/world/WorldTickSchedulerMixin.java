@@ -1,7 +1,9 @@
 package com.axalotl.async.mixin.world;
 
 import com.axalotl.async.parallelised.ConcurrentCollections;
+import com.axalotl.async.parallelised.fastutil.Long2LongConcurrentHashMap;
 import com.axalotl.async.parallelised.fastutil.Long2ObjectOpenConcurrentHashMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.world.tick.ChunkTickScheduler;
 import net.minecraft.world.tick.OrderedTick;
@@ -37,4 +39,9 @@ public abstract class WorldTickSchedulerMixin<T> implements QueryableTickSchedul
     @Final
     @Mutable
     private List<OrderedTick<T>> tickedTicks = new CopyOnWriteArrayList<>();
+
+    @Shadow
+    @Final
+    @Mutable
+    private Long2LongMap nextTriggerTickByChunkPos = new Long2LongConcurrentHashMap(Long.MAX_VALUE);
 }
