@@ -1,5 +1,6 @@
 package com.axalotl.async.mixin.utils;
 
+import com.axalotl.async.Async;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,7 +28,13 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
     public void onLoad(String mixinPackage) {
         MappingResolver mappingResolver = FabricLoader.getInstance().getMappingResolver();
         mixin2MethodsExcludeMap.put("com.axalotl.async.mixin.utils.SyncAllMixin", mappingResolver.mapMethodName("intermediary", "net.minecraft.class_2806", "method_12165", "()V"));
+        syncAllSet.add("com.axalotl.async.mixin.FastUtilsMixin");
         syncAllSet.add("com.axalotl.async.mixin.utils.SyncAllMixin");
+        if (!Async.c2me) {
+            syncAllSet.addAll(List.of("it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap","it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$ValueIterator", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeySet", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeyIterator",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntrySet", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry"));
+        }
     }
 
     @Override
