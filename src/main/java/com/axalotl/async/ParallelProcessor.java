@@ -47,7 +47,7 @@ public class ParallelProcessor {
         } else {
             ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
                 ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
-                factory.setName("Async-Tick-Pool-Thread-" + ThreadPoolID.getAndIncrement());
+                factory.setName("Async-Tick-Pool-Thread-%d".formatted(ThreadPoolID.getAndIncrement()));
                 regThread("Async-Tick", factory);
                 factory.setDaemon(true);
                 factory.setContextClassLoader(Async.class.getClassLoader());

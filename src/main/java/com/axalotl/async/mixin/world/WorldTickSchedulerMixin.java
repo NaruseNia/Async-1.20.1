@@ -28,12 +28,12 @@ public abstract class WorldTickSchedulerMixin<T> implements QueryableTickSchedul
     @Shadow
     @Final
     @Mutable
-    private Queue<ChunkTickScheduler<T>> tickableChunkTickSchedulers = ConcurrentCollections.newArrayDeque();
+    private Queue<ChunkTickScheduler<T>> tickableChunkTickSchedulers = ConcurrentCollections.newArrayQueue();
 
     @Shadow
     @Final
     @Mutable
-    private Queue<OrderedTick<T>> tickableTicks = ConcurrentCollections.newArrayDeque();
+    private Queue<OrderedTick<T>> tickableTicks = ConcurrentCollections.newArrayQueue();
 
     @Shadow
     @Final

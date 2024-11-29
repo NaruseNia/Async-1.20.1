@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -93,11 +93,11 @@ public final class ConcurrentCollections {
      * @param <T> the type of elements maintained by this deque
      * @return a new concurrent linked deque
      */
-    public static <T> Queue<T> newArrayDeque() {
+    public static <T> Queue<T> newArrayQueue() {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Creating new concurrent linked deque");
         }
-        return new ConcurrentLinkedDeque<>();
+        return new ConcurrentLinkedQueue<>();
     }
 
     /**
