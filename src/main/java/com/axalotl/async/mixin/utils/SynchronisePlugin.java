@@ -32,8 +32,8 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
         syncAllSet.add("com.axalotl.async.mixin.utils.FastUtilsMixin");
         syncAllSet.add("com.axalotl.async.mixin.utils.SyncAllMixin");
 
-        if (Async.c2me) {
-            List.of(
+        if (!Async.c2me) {
+            syncAllSet.addAll(List.of(
                     "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap",
                     "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$ValueIterator",
                     "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeySet",
@@ -42,7 +42,7 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
                     "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator",
                     "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
                     "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry"
-            ).forEach(syncAllSet::remove);
+            ));
         }
     }
 
