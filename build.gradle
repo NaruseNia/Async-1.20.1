@@ -31,8 +31,12 @@ dependencies {
     modImplementation 'com.electronwill.night-config:toml:3.8.1'
     include group: 'com.electronwill.night-config', name: 'toml', version: '3.8.1'
     include group: 'com.electronwill.night-config', name: 'core', version: '3.8.1'
-    include(implementation'org.reflections:reflections:0.10.2')
-    include(implementation 'org.javassist:javassist:3.15.0-GA')
+    implementation('org.reflections:reflections:0.10.2') {
+        exclude group: 'org.apache.commons', module: 'commons-lang3'
+    }
+    implementation('org.javassist:javassist:3.15.0-GA') {
+        exclude group: 'org.apache', module: 'apache-commons'
+    }
     // Mods
     modCompileOnly files('c2me-fixes-worldgen-threading-issues-mc1.21.1-0.3.0+alpha.0.291.jar')
     modCompileOnly files('c2me-fixes-general-threading-issues-mc1.21.1-0.3.0+alpha.0.291.jar')
