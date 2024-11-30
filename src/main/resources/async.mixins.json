@@ -31,7 +31,6 @@
     "entity.VillagerGossipsMixin",
     "server.DedicatedServerWatchdogMixin",
     "server.MinecraftServerMixin",
-    "utils.FastUtilsMixin",
     "utils.LockHelperMixin",
     "utils.SyncAllMixin",
     "utils.TypeFilterableListMixin",

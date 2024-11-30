@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.reflections.Reflections;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
@@ -28,12 +29,28 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
     public void onLoad(String mixinPackage) {
         MappingResolver mappingResolver = FabricLoader.getInstance().getMappingResolver();
         mixin2MethodsExcludeMap.put("com.axalotl.async.mixin.utils.SyncAllMixin", mappingResolver.mapMethodName("intermediary", "net.minecraft.class_2806", "method_12165", "()V"));
-        syncAllSet.add("com.axalotl.async.mixin.FastUtilsMixin");
+
+        Reflections reflections = new Reflections("it.unimi.dsi.fastutil");
+
+        Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
+
+        for (Class<?> clazz : classes) {
+            syncAllSet.add(clazz.getName());
+        }
+
         syncAllSet.add("com.axalotl.async.mixin.utils.SyncAllMixin");
-        if (!Async.c2me) {
-            syncAllSet.addAll(List.of("it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap","it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$ValueIterator", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeySet", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeyIterator",
-                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntrySet", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator", "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
-                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry"));
+
+        if (Async.c2me) {
+            List.of(
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$ValueIterator",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeySet",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeyIterator",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntrySet",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
+                    "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry"
+            ).forEach(syncAllSet::remove);
         }
     }
 
