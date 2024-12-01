@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Mixin(WorldTickScheduler.class)
@@ -28,7 +29,7 @@ public abstract class WorldTickSchedulerMixin<T> implements QueryableTickSchedul
     @Shadow
     @Final
     @Mutable
-    private Queue<ChunkTickScheduler<T>> tickableChunkTickSchedulers = ConcurrentCollections.newArrayDeque();
+    private Queue<ChunkTickScheduler<T>> tickableChunkTickSchedulers = new ConcurrentLinkedQueue<>();
 
     @Shadow
     @Final
