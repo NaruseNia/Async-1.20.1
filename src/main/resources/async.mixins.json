@@ -48,8 +48,7 @@
     "world.ServerWorldMixin",
     "world.SimulationDistanceLevelPropagatorMixin",
     "world.WorldChunkMixin",
-    "world.WorldMixin",
-    "world.WorldTickSchedulerMixin"
+    "world.WorldMixin"
   ],
   "client": [
   ],

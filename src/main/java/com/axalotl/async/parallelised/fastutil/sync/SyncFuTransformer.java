@@ -30,6 +30,9 @@ public class SyncFuTransformer implements PreLaunchEntrypoint {
             Knot.getLauncher().loadIntoTarget("it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$FastEntryIterator");
             Knot.getLauncher().loadIntoTarget("it.unimi.dsi.fastutil.longs.Long2ObjectMap$FastEntrySet");
             Knot.getLauncher().loadIntoTarget("it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet");
+            Knot.getLauncher().loadIntoTarget("it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet");
+            Knot.getLauncher().loadIntoTarget("it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap");
+            Knot.getLauncher().loadIntoTarget("it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap");
         } catch (Exception e) {
             e.printStackTrace();
         }
