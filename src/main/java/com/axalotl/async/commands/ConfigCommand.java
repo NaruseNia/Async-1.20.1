@@ -17,9 +17,9 @@ public class ConfigCommand {
         return root.then(literal("config")
                 .then(CommandManager.literal("toggle").requires(cmdSrc -> cmdSrc.hasPermissionLevel(2)).executes(cmdCtx -> {
                     AsyncConfig.disabled = !AsyncConfig.disabled;
+                    AsyncConfig.saveConfig();
                     MutableText message = prefix.copy().append(Text.literal("Async is now ").styled(style -> style.withColor(Formatting.WHITE)))
                             .append(Text.literal(AsyncConfig.disabled ? "disabled" : "enabled").styled(style -> style.withColor(Formatting.GREEN)));
-                    AsyncConfig.saveConfig();
                     cmdCtx.getSource().sendFeedback(() -> message, true);
                     return 1;
                 }))
@@ -29,6 +29,16 @@ public class ConfigCommand {
                             AsyncConfig.disableTNT = value;
                             AsyncConfig.saveConfig();
                             MutableText message = prefix.copy().append(Text.literal("Disable TNT set to ").styled(style -> style.withColor(Formatting.WHITE)))
+                                    .append(Text.literal(String.valueOf(value)).styled(style -> style.withColor(Formatting.GREEN)));
+                            cmdCtx.getSource().sendFeedback(() -> message, true);
+                            return 1;
+                        })))
+                .then(CommandManager.literal("setEntityMoveSync").requires(cmdSrc -> cmdSrc.hasPermissionLevel(2))
+                        .then(CommandManager.argument("value", BoolArgumentType.bool()).executes(cmdCtx -> {
+                            boolean value = BoolArgumentType.getBool(cmdCtx, "value");
+                            AsyncConfig.enableEntityMoveSync = value;
+                            AsyncConfig.saveConfig();
+                            MutableText message = prefix.copy().append(Text.literal("Entity move sync set to ").styled(style -> style.withColor(Formatting.WHITE)))
                                     .append(Text.literal(String.valueOf(value)).styled(style -> style.withColor(Formatting.GREEN)));
                             cmdCtx.getSource().sendFeedback(() -> message, true);
                             return 1;

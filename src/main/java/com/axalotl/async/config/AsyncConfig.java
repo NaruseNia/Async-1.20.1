@@ -22,6 +22,7 @@ public class AsyncConfig {
     public static int paraMax;
     public static boolean virtualThreads;
     public static boolean disableTNT;
+    public static boolean enableEntityMoveSync;
 
     public static void init() {
         LOGGER.info("Initializing Async Config...");
@@ -42,6 +43,7 @@ public class AsyncConfig {
         CONFIG.set("paraMax", paraMax);
         CONFIG.set("virtualThreads", virtualThreads);
         CONFIG.set("disableTNT", disableTNT);
+        CONFIG.set("enableEntityMoveSync", enableEntityMoveSync);
         CONFIG.save();
         LOGGER.info("Configuration saved successfully.");
     }
@@ -51,6 +53,7 @@ public class AsyncConfig {
         paraMax = CONFIG.get("paraMax");
         virtualThreads = CONFIG.get("virtualThreads");
         disableTNT = CONFIG.get("disableTNT");
+        enableEntityMoveSync = CONFIG.get("enableEntityMoveSync");
     }
 
     private static void setDefaultValues() {
@@ -58,6 +61,8 @@ public class AsyncConfig {
         paraMax = -1;
         virtualThreads = false;
         disableTNT = true;
+        enableEntityMoveSync = false;
+
         CONFIG.set("disabled", disabled);
         CONFIG.setComment("disabled", "Globally disable all toggleable functionality within the async system. Set to true to stop all asynchronous operations.");
 
@@ -71,6 +76,9 @@ public class AsyncConfig {
 
         CONFIG.set("disableTNT", disableTNT);
         CONFIG.setComment("disableTNT", "Disables TNT entity parallelization. Use this to prevent asynchronous processing of TNT-related tasks");
+
+        CONFIG.set("enableEntityMoveSync", enableEntityMoveSync);
+        CONFIG.setComment("enableEntityMoveSync", "Modifies entity movement processing: true for synchronous movement (vanilla mechanics intact, less performance), false for asynchronous movement (better performance, may break mechanics).");
     }
 
     public static int getParallelism() {
