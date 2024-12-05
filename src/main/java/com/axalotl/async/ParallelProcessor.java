@@ -130,8 +130,10 @@ public class ParallelProcessor {
             try {
                 List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskMap.values());
                 CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
-                server.getWorlds().forEach(world -> world.getChunkManager().executeQueuedTasks());
-                server.getWorlds().forEach(world -> world.getChunkManager().mainThreadExecutor.runTasks(allTasks::isDone));
+                server.getWorlds().forEach(world -> {
+                    world.getChunkManager().executeQueuedTasks();
+                    world.getChunkManager().mainThreadExecutor.runTasks(allTasks::isDone);
+                });
             } catch (CompletionException e) {
                 LOGGER.error("Critical error during entity tick processing", e);
                 server.shutdown();
