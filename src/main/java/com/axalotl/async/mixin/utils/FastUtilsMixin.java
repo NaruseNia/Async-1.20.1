@@ -1,6 +1,7 @@
 package com.axalotl.async.mixin.utils;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
@@ -15,7 +16,9 @@ import org.spongepowered.asm.mixin.Mixin;
         Long2ObjectLinkedOpenHashMap.class,
         ReferenceOpenHashSet.class,
         Reference2ReferenceArrayMap.class,
-        Object2LongOpenHashMap.class
+        Object2LongOpenHashMap.class,
+        Reference2ReferenceOpenHashMap.class,
+        IntArrayList.class
 },
         targets = {
                 "it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap$FastEntryIterator",
@@ -30,3 +33,4 @@ import org.spongepowered.asm.mixin.Mixin;
         })
 public class FastUtilsMixin {
 }
+
