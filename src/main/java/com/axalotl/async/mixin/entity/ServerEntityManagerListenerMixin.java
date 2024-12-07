@@ -35,21 +35,15 @@ public abstract class ServerEntityManagerListenerMixin<T extends EntityLike> imp
 
     @WrapMethod(method = "updateEntityPosition")
     private void updateEntityPosition(Operation<Void> original) {
-        lock.lock();
-        try {
+        synchronized (lock) {
             original.call();
-        } finally {
-            lock.unlock();
         }
     }
 
     @WrapMethod(method = "remove")
     private void remove(Entity.RemovalReason reason, Operation<Void> original) {
-        lock.lock();
-        try {
+        synchronized (lock) {
             original.call(reason);
-        } finally {
-            lock.unlock();
         }
     }
 }

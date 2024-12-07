@@ -18,12 +18,10 @@ public abstract class AllayEntityMixin implements InventoryOwner {
 
     @WrapMethod(method = "loot")
     private void loot(ServerWorld world, ItemEntity itemEntity, Operation<Void> original) {
-        lock.lock();
-        try {
-            if (!itemEntity.isRemoved() && itemEntity.getEntityWorld() != null)
+        synchronized (lock) {
+            if (!itemEntity.isRemoved() && itemEntity.getEntityWorld() != null) {
                 original.call(world, itemEntity);
-        } finally {
-            lock.unlock();
+            }
         }
     }
 }

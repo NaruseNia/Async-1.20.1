@@ -16,15 +16,6 @@ public class EntityMixin {
     @Unique
     private static final ReentrantLock lock = new ReentrantLock();
 
-    @WrapMethod(method = "isInsideBubbleColumn")
-    private synchronized boolean isInsideBubbleColumn(Operation<Boolean> original) {
-        try {
-            return original.call();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     @WrapMethod(method = "move")
     private synchronized void move(MovementType movementType, Vec3d movement, Operation<Void> original) {
         if (AsyncConfig.enableEntityMoveSync){
