@@ -30,9 +30,16 @@ public abstract class ItemEntityMixin extends Entity {
     }
 
     @Override
-    public void move(MovementType movementType, Vec3d movement) {
+    public void move(MovementType type, Vec3d movement) {
         synchronized (lock) {
-            super.move(movementType, movement);
+            super.move(type, movement);
+        }
+    }
+
+    @Override
+    public void tickBlockCollision() {
+        synchronized (lock) {
+            super.tickBlockCollision();
         }
     }
 }

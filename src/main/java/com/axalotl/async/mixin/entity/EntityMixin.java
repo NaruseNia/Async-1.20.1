@@ -17,13 +17,24 @@ public class EntityMixin {
     private static final ReentrantLock lock = new ReentrantLock();
 
     @WrapMethod(method = "move")
-    private synchronized void move(MovementType movementType, Vec3d movement, Operation<Void> original) {
-        if (AsyncConfig.enableEntityMoveSync){
+    private synchronized void move(MovementType type, Vec3d movement, Operation<Void> original) {
+        if (AsyncConfig.enableEntityMoveSync) {
             synchronized (lock) {
-                original.call(movementType, movement);
+                original.call(type, movement);
             }
         } else {
-            original.call(movementType, movement);
+            original.call(type, movement);
+        }
+    }
+
+    @WrapMethod(method = "tickBlockCollision()V")
+    private void tickBlockCollision(Operation<Void> original) {
+        if (AsyncConfig.enableEntityMoveSync) {
+            synchronized (lock) {
+                original.call();
+            }
+        } else {
+            original.call();
         }
     }
 }
