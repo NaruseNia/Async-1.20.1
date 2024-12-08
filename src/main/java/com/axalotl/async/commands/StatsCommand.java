@@ -3,12 +3,14 @@ package com.axalotl.async.commands;
 import com.axalotl.async.config.AsyncConfig;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.axalotl.async.ParallelProcessor;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.text.DecimalFormat;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.axalotl.async.commands.AsyncCommand.prefix;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -36,7 +38,28 @@ public class StatsCommand {
                             .append(Text.literal(String.valueOf(new DecimalFormat("#.##").format(mean(maxThreads, liveValues)))).styled(style -> style.withColor(Formatting.GREEN)));
                     cmdCtx.getSource().sendFeedback(() -> message, true);
                     return 1;
-                }));
+                })
+                .then(literal("entity")
+                        .executes(cmdCtx -> {
+                            ServerCommandSource source = cmdCtx.getSource();
+                            MinecraftServer server = source.getServer();
+                            String headerMessageString = "Entity count by world: ";
+                            MutableText message = prefix.copy()
+                                    .append(Text.literal(headerMessageString).styled(style -> style.withColor(Formatting.WHITE)));
+                            server.getWorlds().forEach(world -> {
+                                String worldName = world.getRegistryKey().getValue().toString();
+                                AtomicInteger entityCount = new AtomicInteger();
+                                world.entityList.forEach(entity -> {
+                                    if (entity.isAlive()) {
+                                        entityCount.incrementAndGet();
+                                    }
+                                });
+                                message.append(Text.literal("\n" + worldName + ": ").styled(style -> style.withColor(Formatting.YELLOW)))
+                                        .append(Text.literal(String.valueOf(entityCount.get())).styled(style -> style.withColor(Formatting.GREEN)));
+                            });
+                            source.sendFeedback(() -> message, true);
+                            return 1;
+                        })));
     }
 
     public static void resetAll() {
