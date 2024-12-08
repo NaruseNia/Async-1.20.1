@@ -3,16 +3,22 @@ package com.axalotl.async.mixin.entity;
 import com.axalotl.async.config.AsyncConfig;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.concurrent.locks.ReentrantLock;
 
 @Mixin(Entity.class)
-public class EntityMixin {
+public abstract class EntityMixin {
+    @Shadow public abstract BlockState getBlockStateAtPos();
+
     @Unique
     private static final ReentrantLock lock = new ReentrantLock();
 
@@ -36,5 +42,9 @@ public class EntityMixin {
         } else {
             original.call();
         }
+    }
+    @Overwrite
+    private boolean isInsideBubbleColumn() {
+        return this.getBlockStateAtPos() != null && this.getBlockStateAtPos().isOf(Blocks.BUBBLE_COLUMN);
     }
 }

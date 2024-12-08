@@ -1,7 +1,5 @@
 package com.axalotl.async.mixin.world;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.server.world.*;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.*;
@@ -29,11 +27,6 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Final
     public ServerChunkLoadingManager chunkLoadingManager;
 
-    @WrapMethod(method = "putInCache")
-    private synchronized void syncPutInCache(long pos, Chunk chunk, ChunkStatus status, Operation<Void> original) {
-        original.call(pos, chunk, status);
-    }
-
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
     private void shortcutGetChunk(int x, int z, ChunkStatus leastStatus, boolean create, CallbackInfoReturnable<Chunk> cir) {
         if (Thread.currentThread() != this.serverThread) {
@@ -56,8 +49,12 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
             if (holder != null) {
                 final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(ChunkStatus.FULL, this.chunkLoadingManager);
                 Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
-                if (chunk instanceof WorldChunk) {
-                    cir.setReturnValue((WorldChunk) chunk);
+                if (chunk instanceof WrapperProtoChunk readOnlyChunk){
+                    System.out.println("yes");
+                    chunk = readOnlyChunk.getWrappedChunk();
+                }
+                if (chunk instanceof WorldChunk worldChunk) {
+                    cir.setReturnValue(worldChunk);
                 }
             }
         }
