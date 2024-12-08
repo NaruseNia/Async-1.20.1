@@ -18,11 +18,11 @@ public class AsyncConfig {
 
     private static CommentedFileConfig CONFIG;
 
-    public static boolean disabled;
-    public static int paraMax;
-    public static boolean virtualThreads;
-    public static boolean disableTNT;
-    public static boolean enableEntityMoveSync;
+    public static boolean disabled = false;
+    public static int paraMax = -1;
+    public static boolean virtualThreads = false;
+    public static boolean disableTNT = true;
+    public static boolean enableEntityMoveSync = false;
 
     public static void init() {
         LOGGER.info("Initializing Async Config...");
@@ -40,10 +40,22 @@ public class AsyncConfig {
 
     public static void saveConfig() {
         CONFIG.set("disabled", disabled);
+        CONFIG.setComment("disabled", "Globally disable all toggleable functionality within the async system. Set to true to stop all asynchronous operations.");
+
         CONFIG.set("paraMax", paraMax);
+        CONFIG.setComment("paraMax", "Maximum number of threads to use for parallel processing. Set to -1 to use default value."
+                + "Note: If 'virtualThreads' is enabled, this setting will be ignored.");
+
         CONFIG.set("virtualThreads", virtualThreads);
+        CONFIG.setComment("virtualThreads", "Enables Java 21+ virtual threads, allowing for a large number of lightweight threads. "
+                + "If enabled, this may provide better scalability on systems with high concurrency needs.");
+
         CONFIG.set("disableTNT", disableTNT);
+        CONFIG.setComment("disableTNT", "Disables TNT entity parallelization. Use this to prevent asynchronous processing of TNT-related tasks");
+
         CONFIG.set("enableEntityMoveSync", enableEntityMoveSync);
+        CONFIG.setComment("enableEntityMoveSync", "Modifies entity movement processing: true for synchronous movement (vanilla mechanics intact, less performance), false for asynchronous movement (better performance, may break mechanics).");
+
         CONFIG.save();
         LOGGER.info("Configuration saved successfully.");
     }
@@ -57,17 +69,11 @@ public class AsyncConfig {
     }
 
     private static void setDefaultValues() {
-        disabled = false;
-        paraMax = -1;
-        virtualThreads = false;
-        disableTNT = true;
-        enableEntityMoveSync = false;
-
-        CONFIG.set("disabled", disabled);
+        CONFIG.set("disabled", false);
         CONFIG.setComment("disabled", "Globally disable all toggleable functionality within the async system. Set to true to stop all asynchronous operations.");
 
         CONFIG.set("paraMax", paraMax);
-        CONFIG.setComment("paraMax", "Maximum number of threads to use for parallel processing. Set to -1 to use all available CPU cores. "
+        CONFIG.setComment("paraMax", "Maximum number of threads to use for parallel processing. Set to -1 to use default value."
                 + "Note: If 'virtualThreads' is enabled, this setting will be ignored.");
 
         CONFIG.set("virtualThreads", virtualThreads);
@@ -82,9 +88,7 @@ public class AsyncConfig {
     }
 
     public static int getParallelism() {
-        if (paraMax <= 1) {
-            return Runtime.getRuntime().availableProcessors();
-        }
-        return org.joml.Math.max(2, org.joml.Math.min(Runtime.getRuntime().availableProcessors(), paraMax));
+        if (paraMax <= 1) return Runtime.getRuntime().availableProcessors();
+        return Math.max(1, Math.min(Runtime.getRuntime().availableProcessors(), paraMax));
     }
 }
