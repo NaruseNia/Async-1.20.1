@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(World.class)
+@Mixin(value = World.class, priority = 1500)
 public abstract class WorldMixin implements WorldAccess, AutoCloseable {
     @Shadow
     @Final

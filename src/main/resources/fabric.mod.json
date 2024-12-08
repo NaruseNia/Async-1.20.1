@@ -37,11 +37,7 @@
   },
   "custom": {
     "lithium:options": {
-      "util.entity_movement_tracking": false,
-      "util.entity_section_position": false,
-      "entity.inactive_navigations": false,
-      "chunk.entity_class_groups": false,
-      "world.chunk_access": false
+      "entity.inactive_navigations": false
     }
   },
   "suggests": {
