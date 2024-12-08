@@ -20,7 +20,6 @@ public class AsyncConfig {
 
     public static boolean disabled = false;
     public static int paraMax = -1;
-    public static boolean virtualThreads = false;
     public static boolean disableTNT = true;
     public static boolean enableEntityMoveSync = false;
 
@@ -46,10 +45,6 @@ public class AsyncConfig {
         CONFIG.setComment("paraMax", "Maximum number of threads to use for parallel processing. Set to -1 to use default value."
                 + "Note: If 'virtualThreads' is enabled, this setting will be ignored.");
 
-        CONFIG.set("virtualThreads", virtualThreads);
-        CONFIG.setComment("virtualThreads", "Enables Java 21+ virtual threads, allowing for a large number of lightweight threads. "
-                + "If enabled, this may provide better scalability on systems with high concurrency needs.");
-
         CONFIG.set("disableTNT", disableTNT);
         CONFIG.setComment("disableTNT", "Disables TNT entity parallelization. Use this to prevent asynchronous processing of TNT-related tasks");
 
@@ -63,7 +58,6 @@ public class AsyncConfig {
     private static void loadConfigValues() {
         disabled = CONFIG.get("disabled");
         paraMax = CONFIG.get("paraMax");
-        virtualThreads = CONFIG.get("virtualThreads");
         disableTNT = CONFIG.get("disableTNT");
         enableEntityMoveSync = CONFIG.get("enableEntityMoveSync");
     }
@@ -75,10 +69,6 @@ public class AsyncConfig {
         CONFIG.set("paraMax", paraMax);
         CONFIG.setComment("paraMax", "Maximum number of threads to use for parallel processing. Set to -1 to use default value."
                 + "Note: If 'virtualThreads' is enabled, this setting will be ignored.");
-
-        CONFIG.set("virtualThreads", virtualThreads);
-        CONFIG.setComment("virtualThreads", "Enables Java 21+ virtual threads, allowing for a large number of lightweight threads. "
-                + "If enabled, this may provide better scalability on systems with high concurrency needs.");
 
         CONFIG.set("disableTNT", disableTNT);
         CONFIG.setComment("disableTNT", "Disables TNT entity parallelization. Use this to prevent asynchronous processing of TNT-related tasks");

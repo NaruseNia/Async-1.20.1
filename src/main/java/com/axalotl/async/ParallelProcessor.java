@@ -37,26 +37,16 @@ public class ParallelProcessor {
     );
 
     public static void setupThreadPool(int parallelism) {
-        if (AsyncConfig.virtualThreads) {
-            ThreadFactory factory = Thread.ofVirtual()
-                    .name("Async-Tick-Pool-Thread-", 1)
-                    .uncaughtExceptionHandler((thread, throwable) ->
-                            LOGGER.error("Uncaught exception in virtual thread {}: {}", thread.getName(), throwable))
-                    .factory();
-            tickPool = Executors.newThreadPerTaskExecutor(factory);
-            LOGGER.info("Initialized virtual thread pool with threads: {}", Runtime.getRuntime().availableProcessors());
-        } else {
-            ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
-                ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
-                factory.setName("Async-Tick-Pool-Thread-%d".formatted(ThreadPoolID.getAndIncrement()));
-                regThread("Async-Tick", factory);
-                factory.setDaemon(true);
-                factory.setContextClassLoader(Async.class.getClassLoader());
-                return factory;
-            };
-            tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
-            LOGGER.info("Initialized ForkJoinPool with {} threads", parallelism);
-        }
+        ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
+            ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
+            factory.setName("Async-Tick-Pool-Thread-%d".formatted(ThreadPoolID.getAndIncrement()));
+            regThread("Async-Tick", factory);
+            factory.setDaemon(true);
+            factory.setContextClassLoader(Async.class.getClassLoader());
+            return factory;
+        };
+        tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
+        LOGGER.info("Initialized ForkJoinPool with {} threads", parallelism);
     }
 
     public static void regThread(String poolName, Thread thread) {
