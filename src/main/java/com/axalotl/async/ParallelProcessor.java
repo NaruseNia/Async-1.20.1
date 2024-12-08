@@ -44,6 +44,7 @@ public class ParallelProcessor {
                             LOGGER.error("Uncaught exception in virtual thread {}: {}", thread.getName(), throwable))
                     .factory();
             tickPool = Executors.newThreadPerTaskExecutor(factory);
+            LOGGER.info("Initialized virtual thread pool with threads: {}", Runtime.getRuntime().availableProcessors());
         } else {
             ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
                 ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
@@ -54,6 +55,7 @@ public class ParallelProcessor {
                 return factory;
             };
             tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
+            LOGGER.info("Initialized ForkJoinPool with {} threads", parallelism);
         }
     }
 
