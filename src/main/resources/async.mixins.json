@@ -11,7 +11,7 @@
     "entity.EntityIndexMixin",
     "entity.EntityListMixin",
     "entity.EntityMixin",
-//    "entity.EntityTrackingSectionMixin",
+    "entity.EntityTrackingSectionMixin",
     "entity.FoxEntityMixin",
     "entity.GoalSelectorMixin",
     "entity.HoldTradeOffersTaskMixin",
