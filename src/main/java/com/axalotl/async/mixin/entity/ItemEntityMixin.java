@@ -42,4 +42,11 @@ public abstract class ItemEntityMixin extends Entity {
             super.tickBlockCollision();
         }
     }
+
+    @Override
+    public void tickBlockCollision(Vec3d lastRenderPos, Vec3d pos) {
+        synchronized (lock) {
+            super.tickBlockCollision(lastRenderPos, pos);
+        }
+    }
 }

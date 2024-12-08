@@ -33,7 +33,6 @@ public abstract class LivingEntityMixin extends Entity {
         original.call(damageSource);
     }
 
-
     @Overwrite
     public boolean isClimbing() {
         if (this.isSpectator()) {
@@ -53,5 +52,4 @@ public abstract class LivingEntityMixin extends Entity {
             }
         }
     }
-
 }
