@@ -49,10 +49,6 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
             if (holder != null) {
                 final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(ChunkStatus.FULL, this.chunkLoadingManager);
                 Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
-                if (chunk instanceof WrapperProtoChunk readOnlyChunk){
-                    System.out.println("yes");
-                    chunk = readOnlyChunk.getWrappedChunk();
-                }
                 if (chunk instanceof WorldChunk worldChunk) {
                     cir.setReturnValue(worldChunk);
                 }
