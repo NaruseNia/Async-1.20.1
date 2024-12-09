@@ -17,7 +17,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
-    @Shadow public abstract BlockState getBlockStateAtPos();
+    @Shadow
+    public abstract BlockState getBlockStateAtPos();
 
     @Unique
     private static final ReentrantLock lock = new ReentrantLock();
@@ -55,6 +56,18 @@ public abstract class EntityMixin {
         }
     }
 
+    @WrapMethod(method = "setRemoved")
+    private void setRemoved(Entity.RemovalReason reason, Operation<Void> original) {
+        synchronized (lock) {
+            original.call(reason);
+        }
+    }
+
+
+    /**
+     * @author _Axa_lotL_
+     * @reason Check block state null
+     */
     @Overwrite
     private boolean isInsideBubbleColumn() {
         return this.getBlockStateAtPos() != null && this.getBlockStateAtPos().isOf(Blocks.BUBBLE_COLUMN);

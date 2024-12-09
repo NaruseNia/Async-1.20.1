@@ -2,13 +2,16 @@ package com.axalotl.async.mixin.world;
 
 import com.axalotl.async.ParallelProcessor;
 import com.axalotl.async.parallelised.ConcurrentCollections;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.BlockEvent;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -29,6 +33,12 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
     @Final
     @Mutable
     Set<MobEntity> loadedMobs = ConcurrentCollections.newHashSet();
+
+    @Shadow
+    volatile boolean duringListenerUpdate;
+    @Unique
+    private final ReentrantLock lock = new ReentrantLock();
+
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(CallbackInfo ci) {
@@ -65,8 +75,17 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
         return syncedBlockEventQueue.addAll(c);
     }
 
-    @Redirect(method = "updateListeners", at = @At(value = "FIELD", target = "Lnet/minecraft/server/world/ServerWorld;duringListenerUpdate:Z", opcode = Opcodes.PUTFIELD))
-    private void skipSendBlockUpdatedCheck(ServerWorld instance, boolean value) {
+    @WrapMethod(method = "updateListeners")
+    private void lockUpdateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags, Operation<Void> original) {
+        synchronized (lock) {
+            original.call(pos, oldState, newState, flags);
+        }
+    }
 
+    @Inject(method = "updateListeners", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;logErrorOrPause(Ljava/lang/String;Ljava/lang/Throwable;)V"), cancellable = true)
+    private void unlockInError(BlockPos pos, BlockState oldState, BlockState newState, int flags, CallbackInfo ci) {
+        this.duringListenerUpdate = false;
+        lock.unlock();
+        ci.cancel();
     }
 }

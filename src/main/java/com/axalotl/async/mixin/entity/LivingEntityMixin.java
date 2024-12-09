@@ -33,6 +33,10 @@ public abstract class LivingEntityMixin extends Entity {
         original.call(damageSource);
     }
 
+    /**
+     * @author _Axa_lotL_
+     * @reason Check block state null
+     */
     @Overwrite
     public boolean isClimbing() {
         if (this.isSpectator()) {
