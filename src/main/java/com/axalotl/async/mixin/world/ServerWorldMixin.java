@@ -76,7 +76,7 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
     }
 
     @WrapMethod(method = "updateListeners")
-    private void lockUpdateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags, Operation<Void> original) {
+    private void updateListeners(BlockPos pos, BlockState oldState, BlockState newState, int flags, Operation<Void> original) {
         synchronized (lock) {
             original.call(pos, oldState, newState, flags);
         }

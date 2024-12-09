@@ -35,6 +35,11 @@
     "minecraft": "1.21.4",
     "java": ">=21"
   },
+  "custom": {
+    "lithium:options": {
+      "entity.inactive_navigations": false
+    }
+  },
   "suggests": {
   },
   "breaks": {
