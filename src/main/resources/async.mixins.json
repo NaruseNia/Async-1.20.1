@@ -42,6 +42,7 @@
     "world.SerializingRegionBasedStorageMixin",
     "world.ServerChunkLoadingManagerMixin",
     "world.ServerChunkManagerMixin",
+    "world.ServerEntityHandlerMixin",
     "world.ServerWorldMixin",
     "world.WorldChunkMixin",
     "world.WorldMixin"
