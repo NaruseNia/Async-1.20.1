@@ -23,7 +23,7 @@ public abstract class ItemEntityMixin extends Entity {
     }
 
     @WrapMethod(method = "tryMerge()V")
-    private void unlock(Operation<Void> original) {
+    private void tryMerge(Operation<Void> original) {
         synchronized (lock) {
             original.call();
         }

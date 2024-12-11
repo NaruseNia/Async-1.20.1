@@ -27,6 +27,7 @@
     "entity.SectionedEntityCacheMixin",
     "entity.ServerEntityManagerListenerMixin",
     "entity.ServerPlayerEntityMixin",
+    "entity.VillagerEntityMixin",
     "entity.VillagerGossipsMixin",
     "server.DedicatedServerWatchdogMixin",
     "server.MinecraftServerMixin",
@@ -42,7 +43,6 @@
     "world.SerializingRegionBasedStorageMixin",
     "world.ServerChunkLoadingManagerMixin",
     "world.ServerChunkManagerMixin",
-    "world.ServerEntityHandlerMixin",
     "world.ServerWorldMixin",
     "world.WorldChunkMixin",
     "world.WorldMixin"

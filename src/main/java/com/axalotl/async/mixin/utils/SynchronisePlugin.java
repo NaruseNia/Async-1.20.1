@@ -104,6 +104,6 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
     }
 
     private void logSynchronization(String methodName, String className) {
-        LOGGER.info("Synchronized method: {} in {}", methodName, className);
+        LOGGER.debug("Synchronized method: {} in {}", methodName, className);
     }
 }

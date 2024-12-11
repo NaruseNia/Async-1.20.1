@@ -37,7 +37,8 @@
   },
   "custom": {
     "lithium:options": {
-      "entity.inactive_navigations": false
+      "entity.inactive_navigations": false,
+      "experimental.entity.item_entity_merging": false
     }
   },
   "suggests": {
