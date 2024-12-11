@@ -50,14 +50,9 @@ public abstract class EntityMixin {
     }
 
     @WrapMethod(method = "setRemoved")
-    private synchronized void setRemoved(Entity.RemovalReason reason, Operation<Void> original) {
+    private void setRemoved(Entity.RemovalReason reason, Operation<Void> original) {
         synchronized (lock) {
             original.call(reason);
         }
-    }
-
-    @WrapMethod(method = "pushAwayFrom")
-    private synchronized void pushAwayFrom(Entity entity, Operation<Void> original) {
-        original.call(entity);
     }
 }
