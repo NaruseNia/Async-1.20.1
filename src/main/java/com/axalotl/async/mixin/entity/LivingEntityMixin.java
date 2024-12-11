@@ -20,4 +20,9 @@ public abstract class LivingEntityMixin extends Entity {
     private synchronized void onDeath(DamageSource damageSource, Operation<Void> original) {
         original.call(damageSource);
     }
+
+    @WrapMethod(method = "pushAwayFrom")
+    private synchronized void pushAwayFrom(Entity entity, Operation<Void> original) {
+        original.call(entity);
+    }
 }
