@@ -14,6 +14,9 @@ import net.minecraft.world.chunk.ChunkLoader;
 import net.minecraft.world.storage.StorageKey;
 import net.minecraft.world.storage.VersionedChunkStorage;
 import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -48,5 +51,11 @@ public abstract class ServerChunkLoadingManagerMixin extends VersionedChunkStora
     @WrapMethod(method = "unloadEntity")
     private synchronized void unloadEntity(Entity entity, Operation<Void> original) {
         original.call(entity);
+    }
+
+    @Inject(method = "loadEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getFatalOrPause(Ljava/lang/Throwable;)Ljava/lang/Throwable;"), cancellable = true)
+    private void skipThrowLoadEntity(Entity entity, CallbackInfo ci) {
+        this.entityTrackers.remove(entity.getId());
+        ci.cancel();
     }
 }

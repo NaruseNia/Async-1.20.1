@@ -26,12 +26,20 @@ public abstract class EntityIndexMixin<T extends EntityLike> {
     @Shadow
     @Final
     @Mutable
-    private Map<UUID, T> uuidToEntity = ConcurrentCollections.newHashMap();
+    private Map<UUID, T> uuidToEntity;
 
     @Inject(method = "<init>",at = @At("TAIL"))
     private void replaceConVars(CallbackInfo ci)
     {
         idToEntity = new Int2ObjectConcurrentHashMap<>();
+        uuidToEntity = ConcurrentCollections.newHashMap();
     }
 
+    @Inject(method = "add", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"), cancellable = true)
+    private void skipWarn(T entity, CallbackInfo ci) {
+        if (idToEntity.containsKey(entity.getId())) {
+            uuidToEntity.remove(entity.getUuid());
+            ci.cancel();
+        }
+    }
 }
