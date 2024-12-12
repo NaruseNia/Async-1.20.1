@@ -121,6 +121,11 @@ public class ParallelProcessor {
             try {
                 List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskQueue);
                 CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
+                allTasks.orTimeout(60, TimeUnit.SECONDS).exceptionally(ex -> {
+                    LOGGER.error("Timeout during entity tick processing", ex);
+                    server.shutdown();
+                    return null;
+                });
                 server.getWorlds().forEach(world -> {
                     world.getChunkManager().executeQueuedTasks();
                     world.getChunkManager().mainThreadExecutor.runTasks(allTasks::isDone);
@@ -137,7 +142,7 @@ public class ParallelProcessor {
     public static void stop() {
         tickPool.shutdown();
         try {
-            if (!tickPool.awaitTermination(60, TimeUnit.SECONDS)) {
+            if (!tickPool.awaitTermination(10, TimeUnit.SECONDS)) {
                 tickPool.shutdownNow();
             }
         } catch (InterruptedException e) {
