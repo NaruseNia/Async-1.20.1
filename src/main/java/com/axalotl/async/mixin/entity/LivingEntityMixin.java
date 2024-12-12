@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 
@@ -19,5 +20,10 @@ public abstract class LivingEntityMixin extends Entity {
     @WrapMethod(method = "onDeath")
     private synchronized void onDeath(DamageSource damageSource, Operation<Void> original) {
         original.call(damageSource);
+    }
+
+    @WrapMethod(method = "dropLoot")
+    private synchronized void dropLoot(ServerWorld world, DamageSource damageSource, boolean causedByPlayer, Operation<Void> original) {
+        original.call(world, damageSource, causedByPlayer);
     }
 }
