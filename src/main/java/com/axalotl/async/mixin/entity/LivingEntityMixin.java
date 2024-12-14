@@ -23,7 +23,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @WrapMethod(method = "dropLoot")
-    private synchronized void dropLoot(ServerWorld world, DamageSource damageSource, boolean causedByPlayer, Operation<Void> original) {
-        original.call(world, damageSource, causedByPlayer);
+    private synchronized void dropLoot(DamageSource damageSource, boolean causedByPlayer, Operation<Void> original) {
+        original.call(damageSource, causedByPlayer);
     }
 }

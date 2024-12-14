@@ -26,6 +26,7 @@ public class Async implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             LOGGER.info("Async Setting up thread-pool...");
             ParallelProcessor.setupThreadPool(AsyncConfig.getParallelism());
+            LOGGER.info("Async Setting up thread-pool... Done!");
             StatsCommand.resetAll();
         });
 

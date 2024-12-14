@@ -22,14 +22,8 @@ public abstract class SerializingRegionBasedStorageMixin<R, P> implements AutoCl
     @Shadow
     @Mutable
     private final LongLinkedOpenHashSet unsavedElements = new ConcurrentLongLinkedOpenHashSet();
-    @Shadow
-    @Mutable
-    private final Long2ObjectMap<CompletableFuture<Optional<SerializingRegionBasedStorage.LoadResult<P>>>> pendingLoads = new Long2ObjectConcurrentHashMap<>();
-    @Shadow
-    @Mutable
-    private final LongSet loadedChunks = new ConcurrentLongLinkedOpenHashSet();
 
-    @WrapMethod(method = "loadAndWait")
+    @WrapMethod(method = "loadDataAt")
     private synchronized void release(ChunkPos chunkPos, Operation<Void> original) {
         original.call(chunkPos);
     }

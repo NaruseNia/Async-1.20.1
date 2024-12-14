@@ -32,8 +32,8 @@ dependencies {
     include group: 'com.electronwill.night-config', name: 'toml', version: '3.8.1'
     include group: 'com.electronwill.night-config', name: 'core', version: '3.8.1'
     // Mods
-    modCompileOnly files('c2me-fixes-worldgen-threading-issues-mc1.21.1-0.3.0+alpha.0.291.jar')
-    modCompileOnly files('c2me-fixes-general-threading-issues-mc1.21.1-0.3.0+alpha.0.291.jar')
+    modCompileOnly files('c2me-fixes-worldgen-threading-issues-mc1.20.1-0.2.0+alpha.11.13.jar')
+    modCompileOnly files('c2me-fixes-general-threading-issues-mc1.20.1-0.2.0+alpha.11.13.jar')
 }
 
 processResources {
@@ -45,7 +45,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 17
 }
 
 java {
@@ -54,8 +54,8 @@ java {
     // If you remove this line, sources will not be generated.
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 loom {
